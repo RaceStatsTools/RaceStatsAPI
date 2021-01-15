@@ -1,0 +1,339 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Centralized race times API",
+    "version": "3.0.0",
+    "title": "Race Stats API",
+    "contact": {
+      "email": "gotleg@gmail.com"
+    }
+  },
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "tags": [
+    {
+      "name": "users",
+      "description": "API endpoints related to users management (CRUD, list, ...)"
+    },
+    {
+      "name": "auth",
+      "description": "API endpoints related to users authentication"
+    },
+    {
+      "name": "laptimes",
+      "description": "API endpoints to add of request laptimes"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Add user",
+        "description": "Add new user",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "description": "User to create",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created user info",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Erreur dans les paramètres ou erreur métier. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Serveur Error. Erreur technique du serveur. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get user info by id",
+        "description": "Request user info using user id.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User info",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Erreur dans les paramètres ou erreur métier. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Serveur Error. Erreur technique du serveur. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get user info based on auth",
+        "description": "Request user info using auth token",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "User info",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Erreur dans les paramètres ou erreur métier. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Serveur Error. Erreur technique du serveur. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          }
+        }
+      }
+    },
+    "/auth": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Auth user",
+        "description": "Auth user",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "AuthRequest",
+            "description": "User to auth",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuthRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authentication token info",
+            "schema": {
+              "$ref": "#/definitions/AuthToken"
+            }
+          },
+          "400": {
+            "description": "Erreur dans les paramètres ou erreur métier. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Serveur Error. Erreur technique du serveur. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          }
+        }
+      }
+    },
+    "/laptimes": {
+      "post": {
+        "tags": [
+          "laptimes"
+        ],
+        "summary": "Add laptime for user",
+        "description": "Add laptime for user",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "LapTime",
+            "description": "LapTime to register",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LapTime"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "LapTime created",
+            "schema": {
+              "$ref": "#/definitions/LapTime"
+            }
+          },
+          "400": {
+            "description": "Erreur dans les paramètres ou erreur métier. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Serveur Error. Erreur technique du serveur. Le service retourne alors un document JSON de format ListErrors",
+            "schema": {
+              "$ref": "#/definitions/ListErrors"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ListErrors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Error"
+      }
+    },
+    "Error": {
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "return_code - Code d'erreur de l api metier",
+          "example": "critereStrong"
+        },
+        "message": {
+          "type": "string",
+          "description": "usermsg - Message d'erreur de l api metier",
+          "example": "Le %critere% est obligatoire !"
+        }
+      }
+    },
+    "User": {
+      "required": [
+        "email",
+        "nickname"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User id"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address"
+        },
+        "nickname": {
+          "type": "string",
+          "description": "Nickname"
+        },
+        "password": {
+          "type": "string",
+          "description": "password"
+        }
+      }
+    },
+    "AuthRequest": {
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email address"
+        },
+        "password": {
+          "type": "string",
+          "description": "Nickname"
+        }
+      }
+    },
+    "AuthToken": {
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "Auth token"
+        },
+        "duration": {
+          "type": "string",
+          "description": "Token duration"
+        }
+      }
+    },
+    "LapTime": {
+      "properties": {
+        "pilot": {
+          "type": "string",
+          "description": "pilot"
+        },
+        "track": {
+          "type": "string",
+          "description": "track"
+        },
+        "lap_time": {
+          "type": "string",
+          "description": "lap_time"
+        },
+        "lap": {
+          "type": "string",
+          "description": "lap"
+        }
+      }
+    }
+  },
+  "host": "localhost",
+  "basePath": "/"
+}
