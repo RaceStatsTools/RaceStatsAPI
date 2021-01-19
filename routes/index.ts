@@ -3,13 +3,13 @@ import { Router } from 'express';
 
 import { AuthController } from './auth.controller';
 import { UserController } from './user.controller';
-import { LaptimeController } from './laptime.controller';
+import { StatsController } from './stats.controller';
 
 const App: Router = Router();
 
 App.use(passport.initialize());
 AuthController.create(App);
 UserController.create(App);
-LaptimeController.create(App);
+StatsController.create(App);
 
 export const MainRouter: Router = App;
