@@ -1,6 +1,6 @@
 import { BaseRepo } from '../../utils/base.repo';
-import { UserFactory } from './User.factory';
-import { iUser } from './IUser'
+import { UserFactory } from './user.factory';
+import { iUser } from './iUser'
 
 export class BoUserRepo {
 

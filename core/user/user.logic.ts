@@ -1,4 +1,4 @@
-import { BoUserRepo } from "./User.repo";
+import { BoUserRepo } from "./user.repo";
 import { HttpResponse } from "../../utils/httpResponse";
 import { iUser } from "./iUser";
 import * as crypto from 'crypto';

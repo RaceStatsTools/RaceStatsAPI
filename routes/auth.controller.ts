@@ -2,7 +2,7 @@ import * as passport from 'passport';
 import * as localStrategy from 'passport-local';
 import * as crypto from 'crypto'
 import * as JWT from 'jsonwebtoken'
-import { AuthService } from '../core/auth/auth.Service'
+import { AuthService } from '../core/auth/auth.service'
 import { Router, Request, Response, NextFunction } from 'express';
 
 export class AuthController {
