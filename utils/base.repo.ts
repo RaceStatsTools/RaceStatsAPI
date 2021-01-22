@@ -35,7 +35,7 @@ export class BaseRepo {
     return new Promise<boolean>((resolve) => {
       this._client.connect((err) => {
         if (err) {
-          console.error('ERROR: Unable to connect to database');
+          console.error('ERROR: Unable to connect to database', process.env.DB_HOST, process.env.DB_NAME, process.env.DB_USER);
           return resolve(false);
         }
         this.connected = true;
