@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build:live",
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
-    "build": "rm -rf ./dist/* && tsc && cp ./package*.json ./dist/ && cp -r ./api/assets ./dist/api",
+    "build": "rm -rf ./dist/* && tsc && cp ./package*.json ./dist/",
     "test": "echo \"No test specified\""
   },
   "author": "Gauthier Legrand",
