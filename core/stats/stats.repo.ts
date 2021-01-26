@@ -55,11 +55,12 @@ export class StatsRepo {
      
   }
 
-  async listRacesByTrackId(id: number) {
+  async listUserRacesByTrackId(userId: number, id: number) {
     let sql;
     var sqlParams: any[] = [
     ];
     if (id != 0) {
+      sqlParams.push(userId)
       sqlParams.push(id)
       sql = `SELECT  
       r.uuid,
@@ -71,9 +72,10 @@ export class StatsRepo {
       ON r.track = t.length
       INNER JOIN public.lap l
       ON l.race_uuid = r.uuid
-      WHERE t.id = $1
+      WHERE t.id = $2 AND l.user_id = $1
       ORDER BY r.created_at DESC, lap ASC`;
     } else {
+      sqlParams.push(userId)
       sql = `SELECT 
       r.uuid,
       r.created_at as race_date,
@@ -84,6 +86,7 @@ export class StatsRepo {
       ON r.track = t.length
       INNER JOIN public.lap l
       ON l.race_uuid = r.uuid
+      WHERE l.user_id = $1
       ORDER BY r.created_at DESC, lap ASC`;
     }
 

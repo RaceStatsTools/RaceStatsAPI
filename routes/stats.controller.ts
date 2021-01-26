@@ -31,9 +31,9 @@ export class StatsController {
             const result = await StatsLogic.getInstance().postLap(lap);
             return res.status(result.status).json(result.data);
         } else {
-            res.status(403).json({"message": "You must be authentified to post laptimes"});
+            res.status(403).json({ "message": "You must be authentified to post laptimes" });
         }
-        
+
     }
 
     async PostRace(req: Request, res: Response, next: NextFunction) {
@@ -49,9 +49,9 @@ export class StatsController {
             const result = await StatsLogic.getInstance().postRace(race);
             return res.status(result.status).json(result.data);
         } else {
-            res.status(403).json({"message": "You must be authentified to post laptimes"});
+            res.status(403).json({ "message": "You must be authentified to post races" });
         }
-        
+
     }
 
     async ListTracks(req: Request, res: Response) {
@@ -60,7 +60,7 @@ export class StatsController {
     }
 
     async listBestLaps(req: Request, res: Response) {
-        let id:number = 0;
+        let id: number = 0;
         if (parseInt(req.params['userId'])) {
             id = parseInt(req.params['userId'])
         }
@@ -70,8 +70,13 @@ export class StatsController {
 
     async ListRacesByTrackId(req: Request, res: Response) {
         let id = parseInt(req.params['id']);
-        const result = await StatsLogic.getInstance().listRacesByTrackId(id);
-        return res.status(200).json(result.data);
+        const user: iUser = req.user as iUser;
+        if (user && user.id) {
+            const result = await StatsLogic.getInstance().listUserRacesByTrackId(user.id, id);
+            return res.status(200).json(result.data);
+        } else {
+            res.status(403).json({ "message": "You must be authentified to get races" });
+        }
     }
 
 }

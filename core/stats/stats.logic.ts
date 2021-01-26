@@ -64,9 +64,9 @@ export class StatsLogic {
     }
   }
 
-  async listRacesByTrackId(id: number) {
+  async listUserRacesByTrackId(userId: number, id: number) {
     try {
-      let result = await StatsRepo.getInstance().listRacesByTrackId(id);
+      let result = await StatsRepo.getInstance().listUserRacesByTrackId(userId, id);
 
       result = this.parseRacesAndLaps(result)
       return new HttpResponse(200, result);
