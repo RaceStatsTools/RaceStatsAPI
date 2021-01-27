@@ -4,6 +4,7 @@ import * as crypto from 'crypto'
 import * as JWT from 'jsonwebtoken'
 import { AuthService } from '../core/auth/auth.service'
 import { Router, Request, Response, NextFunction } from 'express';
+import { BodyValidator } from './body.validator';
 
 export class AuthController {
 
@@ -27,12 +28,12 @@ export class AuthController {
         let foundUser = await AuthService.getInstance().login(username);
 
         if (!foundUser) {
-            return done('USER_NOT_FOUND');
+            return done({ "message": "No user with this email" });
         }
 
         let samePassword = this.validatePassword(password, foundUser.salt, foundUser.passwordhash);
         if (!samePassword) {
-            return done('INVALID_PASSWORD');
+            return done({ "message": "Invalid password" });
         }
 
         return done(false, foundUser, null);
@@ -42,7 +43,7 @@ export class AuthController {
         if (!passport || !passwordsalt || !passwordHash) {
             return false;
         }
-        
+
         var salt = Buffer.from(passwordsalt, 'base64');
         let encryptedPassword = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha1').toString('base64');
         return passwordHash === encryptedPassword;
@@ -50,30 +51,35 @@ export class AuthController {
 
 
     async Post(req: Request, res: Response, next: NextFunction) {
+        let user = req.body;
+        let error: any = BodyValidator.getInstance().validateLoginRoute(user)
 
-        return passport.authenticate('local', (err: Error, User: any, Info: any) => {
-            if (err) {
-                console.log(err);
-                return res.status(400).json(err);
-            }
+        if (error) {
+            return res.status(400).json(error);
+        } else {
 
-            if (!User) {
-                return res.status(400).end();
-            }
+            return passport.authenticate('local', (err: Error, User: any, Info: any) => {
+                if (err) {
+                    return res.status(400).json(err);
+                }
 
-            let sessionSecret: any = process.env.SESSION_SECRET;
-            let sessionTimeout: any = process.env.SESSION_TIMEOUT;
+                if (!User) {
+                    return res.status(400).end();
+                }
 
-            let token = JWT.sign({ id: User.id, email: User.email, nickname: User.nickname }, sessionSecret, { expiresIn: '300d' });
-            
-            let response: any = {
-                token: token,
-                duration: sessionTimeout
-            }
+                let sessionSecret: any = process.env.SESSION_SECRET;
+                let sessionTimeout: any = process.env.SESSION_TIMEOUT;
 
-            return res.status(200).json(response);
+                let token = JWT.sign({ id: User.id, email: User.email, nickname: User.nickname }, sessionSecret, { expiresIn: '300d' });
 
-        })(req, res, next);
+                let response: any = {
+                    token: token,
+                    duration: sessionTimeout
+                }
+
+                return res.status(200).json(response);
+
+            })(req, res, next);
+        }
     }
-
 }
