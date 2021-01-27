@@ -31,12 +31,12 @@ export class StatsLogic {
     return this._instance;
   }
 
-  async postLap(Laptime: iLap) {
+  async postLap(lap: iLap) {
     try {
-      let result = await StatsRepo.getInstance().postLap(Laptime);
+      let result = await StatsRepo.getInstance().postLap(lap);
       return new HttpResponse(200, result);
     } catch (e) {
-      console.error(`[statsLogic.postLap] error with Lap`);
+      console.error(`[statsLogic.postLap] error with Lap ${lap}`);
       console.error(e);
       return new HttpResponse(500);
     }
@@ -47,7 +47,7 @@ export class StatsLogic {
       let result = await StatsRepo.getInstance().postRace(race);
       return new HttpResponse(200, result);
     } catch (e) {
-      console.error(`[statsLogic.postLap] error with Lap`);
+      console.error(`[statsLogic.postLap] error with Race ${race}`);
       console.error(e);
       return new HttpResponse(500);
     }
