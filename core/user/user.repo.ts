@@ -63,10 +63,11 @@ export class BoUserRepo {
   }
 
   async create(boUser: iUser) {
-    const sql = `INSERT INTO public.user (nickname, email, created_at) VALUES ($1, $2, NOW()) RETURNING *;`
+    const sql = `INSERT INTO public.user (nickname, email, country, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *;`
     const sqlParams = [
       boUser.nickname,
-      boUser.email
+      boUser.email,
+      boUser.country
     ];
 
     try {

@@ -67,7 +67,8 @@ export class StatsRepo {
       r.created_at as race_date,
       r.position,
       r.time as race_time,
-      t.*, l.* FROM public.race r
+      t.*, l.*
+      FROM public.race r
       INNER JOIN public.track t
       ON r.track = t.length
       INNER JOIN public.lap l
@@ -81,7 +82,8 @@ export class StatsRepo {
       r.created_at as race_date,
       r.position,
       r.time as race_time,
-      t.*, l.* FROM public.race r
+      t.*, l.*
+      FROM public.race r
       INNER JOIN public.track t
       ON r.track = t.length
       INNER JOIN public.lap l
@@ -103,23 +105,23 @@ export class StatsRepo {
     ];
     if (userId != 0) {
       sqlParams.push(userId)
-      sql = `SELECT t.name, t.country, u.nickname, MIN(l.time) as time
+      sql = `SELECT t.name, t.country, u.nickname, u.country as user_country, MIN(l.time) as time
       FROM public.track t
       INNER JOIN public.lap l
       ON t.length = l.track
       INNER JOIN public.user u
       ON u.id = l.user_id
       WHERE user_id=$1
-      GROUP BY l.track, t.name, t.country, u.nickname
+      GROUP BY l.track, t.name, t.country, u.nickname, u.country
       ORDER BY t.name ASC`;
     } else {
-      sql = `SELECT t.name, t.country, u.nickname, MIN(l.time) as time
+      sql = `SELECT t.name, t.country, u.nickname, u.country as user_country, MIN(l.time) as time
       FROM public.track t
       INNER JOIN public.lap l
       ON t.length = l.track
       INNER JOIN public.user u
       ON u.id = l.user_id
-      GROUP BY l.track, t.name, t.country, u.nickname
+      GROUP BY l.track, t.name, t.country, u.nickname, u.country
       ORDER BY t.name ASC`;
     }
 

@@ -18,6 +18,7 @@ export class UserFactory {
       id: item.id,
       email: item.email,
       nickname: item.nickname,
+      country: item.country,
       createdAt: item.created_at,
       updatedAt: item.updated_at
     }

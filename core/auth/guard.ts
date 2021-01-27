@@ -25,6 +25,7 @@ export const guard = (req: any, res: Response, next: NextFunction) => {
         id: user.id,
         email: user.email,
         nickname: user.nickname,
+        country: user.country,
         createdAt: user.created_at,
         updatedAt: user.updated_at
       };
