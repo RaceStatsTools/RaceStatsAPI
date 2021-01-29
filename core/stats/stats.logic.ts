@@ -93,13 +93,16 @@ export class StatsLogic {
     let races: raceFull[] = [];
     let currentRace = '';
     let race: raceFull = new raceFull();
+    let raceToPush = 1;
     for(let lap of laps) {
       if (currentRace != lap.uuid) {
         if (currentRace != '') {
           races.push(race);
+          raceToPush--;
         }
           currentRace = lap.uuid
           race = new raceFull();
+          raceToPush++;
           race.uuid = lap.uuid;
           race.name = lap.name;
           race.country = lap.country;
@@ -135,6 +138,9 @@ export class StatsLogic {
           
           race.laps.push(currentLap)
         }
+      }
+      if (raceToPush > 0 && race.laps.length > 0) {
+        races.push(race);
       }
       return races;
     }
