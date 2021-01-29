@@ -121,6 +121,7 @@ export class StatsRepo {
       INNER JOIN public.lap l
       ON time.track = l.track
       GROUP BY l.track, time.name, time.country, time.nickname, time.country, time.user_country, time.time, time.track
+      ORDER BY time.name
       `;
     } else {
       sql = `WITH CTE_time AS (
