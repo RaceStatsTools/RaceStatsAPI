@@ -260,4 +260,37 @@ export class StatsRepo {
     return Promise.resolve(LaptimeFactory.getInstance().mapCollection(res));
   }*/
 
+  async listBestLapsHistory(track: string, duration: number, userId: number) {
+    let sql;
+    var sqlParams: any[] = [
+      track,
+      duration
+    ];
+    if (userId != 0) {
+      sqlParams.push(userId)
+      sql = `SELECT MIN(l.time) as time, to_char(DATE(l.created_at),'YYYY-MM-DD') as date, to_char(DATE(NOW() - $2 * INTERVAL '1 day'),'YYYY-MM-DD') as mindate, to_char(DATE(NOW()),'YYYY-MM-DD') as maxdate
+      FROM public.lap l
+      INNER JOIN track t
+      ON t.length = l.track
+      WHERE t.id = $1 AND l.user_id = $3
+      AND DATE(l.created_at) > NOW() - $2 * INTERVAL '1 day'
+      GROUP BY date
+      ORDER BY date`;
+    } else {
+      sql = `SELECT MIN(l.time) as time, to_char(DATE(l.created_at),'YYYY-MM-DD') as date, to_char(DATE(NOW() - $2 * INTERVAL '1 day'),'YYYY-MM-DD') as mindate, to_char(DATE(NOW()),'YYYY-MM-DD') as maxdate
+      FROM public.lap l
+      INNER JOIN track t
+      ON t.length = l.track
+      WHERE t.id = $1
+      AND DATE(l.created_at) > NOW() - $2 * INTERVAL '1 day'
+      GROUP BY date
+      ORDER BY date`;
+    }
+
+    const res = await BaseRepo.getInstance().select(sql, sqlParams);
+
+    //this.factory.mapFullRace(res)
+    return res;
+  }
+
 }

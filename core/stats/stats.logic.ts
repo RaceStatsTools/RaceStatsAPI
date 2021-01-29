@@ -89,6 +89,32 @@ export class StatsLogic {
     }
   }
 
+  async listBestLapsHistory(track: string, duration: number, userId: number) {
+    try {
+      let result = await StatsRepo.getInstance().listBestLapsHistory(track, duration, userId);
+      let formatedResult: Array<any> = [];
+      const today = new Date(new Date().setHours(0,0,0,0));
+      const beginDate = new Date(today)
+      beginDate.setDate(today.getDate()-duration);
+
+      for (let i=0; i<duration; i++) {
+        formatedResult.push(null)
+      }
+      if (result.length > 0) {
+        result.forEach(time => {
+          const currentDate = new Date(time.date);
+          const dateIndex = (currentDate.getTime() - beginDate.getTime()) / (24 * 3600 * 1000);
+          formatedResult[Math.round(dateIndex)] = time.time
+        })
+      }
+      return new HttpResponse(200, formatedResult);
+    } catch (e) {
+      console.error(`[statsLogic.listRacesByLength] error `);
+      console.error(e);
+      return new HttpResponse(500);
+    }
+  }
+
   parseRacesAndLaps(laps: any[]): any[] {
     let races: raceFull[] = [];
     let currentRace = '';

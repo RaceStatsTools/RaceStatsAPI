@@ -12,6 +12,7 @@ export class StatsController {
         router.post('/laps/', guard, new StatsController().PostLap);
         router.get('/laps/best/:userId', new StatsController().listBestLaps)
         router.post('/races/', guard, new StatsController().PostRace);
+        router.post('/tracks/:id/best-laps-history/:userId', guard, new StatsController().ListBestLapsHistory);
         router.get('/tracks/', guard, new StatsController().ListTracks);
         router.get('/tracks/:id/races', guard, new StatsController().ListRacesByTrackId);
         app.use('/stats', router);
@@ -65,6 +66,23 @@ export class StatsController {
             id = parseInt(req.params['userId'])
         }
         const result = await StatsLogic.getInstance().listBestLaps(id);
+        return res.status(200).json(result.data);
+    }
+
+    async ListBestLapsHistory(req: Request, res: Response) {
+        let id: number = 0;
+        let duration: number = 30;
+        let track = req.params['id'] || '';
+
+        if (parseInt(req.params['userId'])) {
+            id = parseInt(req.params['userId'])
+        }
+
+        if (parseInt(req.body.duration)) {
+            duration = parseInt(req.body.duration)
+        }
+
+        const result = await StatsLogic.getInstance().listBestLapsHistory(track, duration, id);
         return res.status(200).json(result.data);
     }
 
