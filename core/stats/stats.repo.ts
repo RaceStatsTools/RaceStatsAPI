@@ -105,15 +105,23 @@ export class StatsRepo {
     ];
     if (userId != 0) {
       sqlParams.push(userId)
-      sql = `SELECT t.name, t.country, u.nickname, u.country as user_country, MIN(l.time) as time
-      FROM public.track t
+      sql = `WITH CTE_time AS (
+        SELECT t.name, t.country, u.nickname, u.country as user_country, MIN(l.time) as time, l.track
+        FROM public.track t
+        INNER JOIN public.lap l
+        ON t.length = l.track
+        INNER JOIN public.user u
+        ON u.id = l.user_id
+        WHERE user_id=$1
+        GROUP BY l.track, t.name, t.country, u.nickname, u.country
+        ORDER BY t.name ASC
+      )
+      SELECT time.*, MIN(l.time) as best_time
+      FROM CTE_time time
       INNER JOIN public.lap l
-      ON t.length = l.track
-      INNER JOIN public.user u
-      ON u.id = l.user_id
-      WHERE user_id=$1
-      GROUP BY l.track, t.name, t.country, u.nickname, u.country
-      ORDER BY t.name ASC`;
+      ON time.track = l.track
+      GROUP BY l.track, time.name, time.country, time.nickname, time.country, time.user_country, time.time, time.track
+      `;
     } else {
       sql = `WITH CTE_time AS (
         SELECT t.name, t.country, MIN(time) as time, l.track
