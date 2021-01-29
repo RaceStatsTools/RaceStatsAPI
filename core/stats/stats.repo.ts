@@ -115,14 +115,19 @@ export class StatsRepo {
       GROUP BY l.track, t.name, t.country, u.nickname, u.country
       ORDER BY t.name ASC`;
     } else {
-      sql = `SELECT t.name, t.country, u.nickname, u.country as user_country, MIN(l.time) as time
-      FROM public.track t
-      INNER JOIN public.lap l
-      ON t.length = l.track
-      INNER JOIN public.user u
-      ON u.id = l.user_id
-      GROUP BY l.track, t.name, t.country, u.nickname, u.country
-      ORDER BY t.name ASC`;
+      sql = `WITH CTE_time AS (
+        SELECT t.name, t.country, MIN(time) as time, l.track
+          FROM public.lap l
+          INNER JOIN public.track t
+          ON t.length = l.track
+          GROUP BY l.track, t.name, t.country
+        )
+        SELECT time.*, u.nickname, u.country as user_country FROM CTE_time time
+        INNER JOIN public.lap l
+        ON time.track = l.track AND time.time = l.time
+        INNER JOIN public.user u
+        ON u.id = l.user_id
+        ORDER BY time.name`;
     }
 
     const res = await BaseRepo.getInstance().select(sql, sqlParams);
