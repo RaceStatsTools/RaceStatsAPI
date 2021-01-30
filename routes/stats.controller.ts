@@ -13,6 +13,7 @@ export class StatsController {
         router.get('/laps/best/:userId', new StatsController().listBestLaps)
         router.post('/races/', guard, new StatsController().PostRace);
         router.post('/tracks/:id/best-laps-history/:userId', guard, new StatsController().ListBestLapsHistory);
+        router.post('/events/:id/races/', guard, new StatsController().ListRacesByDate);
         router.get('/tracks/', guard, new StatsController().ListTracks);
         router.get('/tracks/:id/races', guard, new StatsController().ListRacesByTrackId);
         router.get('/tracks/:id/rankings', new StatsController().TrackRanking)
@@ -64,6 +65,15 @@ export class StatsController {
     async TrackRanking(req: Request, res: Response) {
         let track = parseInt(req.params['id']) || 0;
         const result = await StatsLogic.getInstance().trackRanking(track);
+        return res.status(200).json(result.data);
+    }
+
+    async ListRacesByDate(req: Request, res: Response) {
+        const id = req.params['id'] || 0;
+        const startDate = req.body.start || '';
+        const endDate = req.body.end || '';
+        const users = req.body.users || [];
+        const result = await StatsLogic.getInstance().listRacesByDate(startDate, endDate, users);
         return res.status(200).json(result.data);
     }
 
