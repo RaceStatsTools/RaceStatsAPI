@@ -55,6 +55,23 @@ export class StatsRepo {
      
   }
 
+  async trackRanking(track: number) {
+    let sql;
+    var sqlParams: any[] = [
+      track
+    ];
+
+    sql = `SELECT min(l."time") as time, l.track, u.nickname, u.country
+    FROM public.lap l
+    INNER JOIN public.user u ON u.id = l.user_id
+    INNER JOIN public.track t ON t.length = l.track
+    WHERE t.id = $1
+    GROUP BY l.track, u.nickname, u.country
+    ORDER BY time`;
+    const res = await BaseRepo.getInstance().select(sql, sqlParams);
+    return res;
+  }
+
   async listUserRacesByTrackId(userId: number, id: number) {
     let sql;
     var sqlParams: any[] = [

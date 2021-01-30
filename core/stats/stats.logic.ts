@@ -64,6 +64,17 @@ export class StatsLogic {
     }
   }
 
+  async trackRanking(track: number) {
+    try {
+      let result = await StatsRepo.getInstance().trackRanking(track);
+      return new HttpResponse(200, result);
+    } catch (e) {
+      console.error(`[statsLogic.trackRanking] error `);
+      console.error(e);
+      return new HttpResponse(500);
+    }
+  }
+
   async listUserRacesByTrackId(userId: number, id: number) {
     try {
       let result = await StatsRepo.getInstance().listUserRacesByTrackId(userId, id);
