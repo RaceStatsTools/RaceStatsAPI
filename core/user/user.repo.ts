@@ -30,8 +30,46 @@ export class UserRepo {
   }
 
   async getByNickname(nickname: String): Promise<any> {
-    const sql = "SELECT * FROM public.user WHERE nickname=($1)";
+    const sql = "SELECT id, nickname, country FROM public.user WHERE LOWER(nickname)=($1)";
     const sqlParams = [nickname];
+    let res = await BaseRepo.getInstance().selectSingle(sql, sqlParams);
+    return res;
+  }
+
+  async getTrackRoundCountByUserId(id: number) {
+    const sql = `SELECT t.id, t.name, t.country, count(r.id) as count FROM public.track t
+    INNER JOIN public.race r ON r.track = t.length
+    WHERE r.user_id=$1
+    GROUP BY t.id, t.name, t.country
+    ORDER BY count(r.id) DESC`;
+    const sqlParams = [id];
+    let res = await BaseRepo.getInstance().select(sql, sqlParams);
+    return res;
+  }
+
+  async getRaceLapCountByUserId(id: number) {
+    const sql = `select count(DISTINCT r.uuid) as race_count, count(*) as lap_count, SUM(r.time) as race_time from public.lap l
+    INNER JOIN public.race r ON l.race_uuid = r.uuid
+    WHERE l.user_id = $1`;
+    const sqlParams = [id];
+    let res = await BaseRepo.getInstance().selectSingle(sql, sqlParams);
+    return res;
+  }
+
+  async getVictoryCountByUserId(id: number) {
+    const sql = `select count(*) as victory_count
+    FROM public.race r
+    WHERE r.user_id = $1 AND r.position = 1`;
+    const sqlParams = [id];
+    let res = await BaseRepo.getInstance().selectSingle(sql, sqlParams);
+    return res;
+  }
+
+  async getPodiumCountByUserId(id: number) {
+    const sql = `select count(*) as podium_count
+    FROM public.race r
+    WHERE r.user_id = $1 AND (r.position = 2 OR r.position = 3)`;
+    const sqlParams = [id];
     let res = await BaseRepo.getInstance().selectSingle(sql, sqlParams);
     return res;
   }
@@ -75,17 +113,17 @@ export class UserRepo {
     }
   }
 
-  async update(id: string, boUser: iUser) {
+  async update(id: string, user: iUser) {
     const sql = 'UPDATE public.user set nickname=$2, email=$3, updated_at=NOW() where id=$1;'
     const sqlParams = [
       id,
-      boUser.nickname,
-      boUser.email
+      user.nickname,
+      user.email
     ];
 
     try {
       await this.baseRepo.executeSql(sql, sqlParams);
-      return boUser;
+      return user;
     } catch (e) {
       console.error(new Error(e));
       console.error(`sql: ${sql}, sqlParams: ${JSON.stringify(sqlParams)}`);
@@ -93,12 +131,12 @@ export class UserRepo {
     }
   }
 
-  async create(boUser: iUser) {
+  async create(user: iUser) {
     const sql = `INSERT INTO public.user (nickname, email, country, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *;`
     const sqlParams = [
-      boUser.nickname,
-      boUser.email,
-      boUser.country
+      user.nickname,
+      user.email,
+      user.country
     ];
 
     try {

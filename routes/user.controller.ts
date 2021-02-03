@@ -14,6 +14,7 @@ export class UserController {
     app.use('/users/', router);
     router.get('/me', guard, new UserController().GetMe);
     router.get('/:userId', new UserController().GetById);
+    router.get('/nickname/:nickname', new UserController().GetByNickname);
     router.put('/:userId', new UserController().Update);
     router.post('/', new UserController().Create);
   }
@@ -31,6 +32,12 @@ export class UserController {
   async GetById(req: Request, res: Response, next: NextFunction) {
     let userId = req.params.userId;
     let result = await UserLogic.getInstance().getById(userId);
+    return res.status(result.status).json(result.data);
+  }
+
+  async GetByNickname(req: Request, res: Response, next: NextFunction) {
+    let nickname = req.params.nickname;
+    let result = await UserLogic.getInstance().getByNickname(nickname);
     return res.status(result.status).json(result.data);
   }
 

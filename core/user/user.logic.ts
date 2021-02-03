@@ -25,8 +25,43 @@ export class UserLogic {
   }
 
   async getByNickname(nickname: String) {
+    let userStats = {
+      id: 0,
+      nickname: '',
+      country: '',
+      race_count: 0,
+      lap_count: 0,
+      victory_count: 0,
+      podium_count: 0,
+      race_time: 0,
+      tracks: Array<any>()
+    };
     let userMatch = await this.userRepo.getByNickname(nickname);
-    return userMatch;
+    if (userMatch) {
+      userStats.id = userMatch.id
+      userStats.nickname = userMatch.nickname
+      userStats.country = userMatch.country
+      let result = await this.userRepo.getRaceLapCountByUserId(userStats.id);
+      if (result) {
+        userStats.race_count = result.race_count
+        userStats.lap_count = result.lap_count
+        userStats.race_time = result.race_time
+      }
+      result = await this.userRepo.getVictoryCountByUserId(userStats.id);
+      if (result) {
+        userStats.victory_count = result.victory_count
+      }
+      result = await this.userRepo.getPodiumCountByUserId(userStats.id);
+      if (result) {
+        userStats.podium_count = result.podium_count
+      }
+      let tracks = await this.userRepo.getTrackRoundCountByUserId(userStats.id);
+        tracks.forEach(track => {
+          userStats.tracks.push(track)
+        });
+      return new HttpResponse(200, userStats);
+    }
+    return new HttpResponse(404);
   }
 
   async getById(id: string): Promise<HttpResponse> {
