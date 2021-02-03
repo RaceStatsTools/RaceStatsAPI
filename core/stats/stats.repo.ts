@@ -117,7 +117,7 @@ export class StatsRepo {
 
   async listRacesByDate(startDate: string, endDate: string, users: Array<number>) {
     let sql: string;
-    sql = `SELECT r.*, t.name, t.country
+    sql = `SELECT r.*, t.name, t.country, t.length, t.gravel, t.asphalt
     FROM race r
     INNER JOIN track t ON t.length = r.track
     WHERE r.created_at BETWEEN $1 AND $2
@@ -131,7 +131,7 @@ export class StatsRepo {
       userCount++;
     })
     sql +=`)
-    ORDER BY r.created_at, r.user_id, t.name, t.country`;
+    ORDER BY r.created_at, r.user_id, t.name, t.country, t.length, t.gravel, t.asphalt`;
     var sqlParams: any[] = [
       startDate,
       endDate
@@ -143,7 +143,8 @@ export class StatsRepo {
 
   async listLapsForRaces(races: Array<number>) {
     let sql: string;
-    sql = `SELECT l.*, u.nickname, u.country FROM lap l
+    sql = `SELECT l.*, u.nickname, u.country, r.position, r.id as race_id, r.time as total_time
+    FROM lap l
     INNER JOIN public.user u
     ON u.id = l.user_id
     INNER JOIN race r
@@ -158,7 +159,8 @@ export class StatsRepo {
       raceCount++;
     })
     sql +=`)
-    ORDER BY l.lap, u.nickname`;
+    GROUP BY l.id, u.nickname, u.country, r.position, r.id, r.time
+    ORDER BY MIN(r.time), r.position, l.lap, u.nickname`;
     var sqlParams: any[] = [
     ];
     const res = await BaseRepo.getInstance().select(sql, sqlParams);

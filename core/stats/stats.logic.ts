@@ -1,7 +1,9 @@
 import { StatsRepo } from './stats.repo';
+import { UserRepo } from '../user/user.repo';
 import { HttpResponse } from '../../utils/httpResponse';
 import { iLap } from './iLap';
 import { iRace } from './iRace';
+import { any, number } from 'joi';
 
 export class raceFull {
   uuid: string = '';
@@ -15,6 +17,28 @@ export class raceFull {
   time: string = "";
   user_id: number = 0;
   laps: iLap[] = [];
+}
+
+interface Index {
+  [key: string]: any;
+}
+
+interface Event {
+  start: string,
+  end: string,
+  users: Index,
+  stages: Array<any>
+}
+
+interface Stage {
+  track: string,
+  created_at: Date,
+  country: string,
+  length: string,
+  asphalt: number,
+  gravel: number,
+  points: Index,
+  rounds: Array<any>
 }
 
 export class StatsLogic {
@@ -90,20 +114,35 @@ export class StatsLogic {
 
   async listRacesByDate(startDate: string, endDate: string, users: Array<number>) {
     try {
+      let event: Event = {
+        start: startDate,
+        end: endDate,
+        users: {},
+        stages: Array<any>()
+      }
+
+      let userDetails: Index = await UserRepo.getInstance().getByIds(users);
+      userDetails.forEach((element: { nickname: string; country: string; points: number }) => {
+        /*let user = {
+          nickname: element.nickname,
+          country: element.country,
+          points: 0,
+        }*/
+        event.users[element.nickname] = 0;
+      });
       let result = await StatsRepo.getInstance().listRacesByDate(startDate, endDate, users);
       let currentRound = 0;
       let currentTrack = '';
       let currentTime = 0;
-      let event = {
-        start: startDate,
-        end: endDate,
-        users: users,
-        stages: Array<any>()
-      }
 
-      let currentStage = {
+      let currentStage: Stage = {
         track: '',
-        created_at: '',
+        created_at: new Date(),
+        country: '',
+        length: '',
+        asphalt: 0,
+        gravel: 0,
+        points: {},
         rounds: Array<any>()
       }
       result.forEach(race => {
@@ -117,6 +156,11 @@ export class StatsLogic {
           currentStage = {
             track: currentTrack,
             created_at: race.created_at,
+            country: race.country,
+            length: race.length,
+            asphalt: race.asphalt,
+            gravel: race.gravel,
+            points: {},
             rounds: Array<any>()
           }
           // Create new currentStage
@@ -127,81 +171,191 @@ export class StatsLogic {
           currentRound++
           let round = {
             number: currentRound,
-            races: Array<number>(),
-            laps: Array<any>()
+            races: Array<any>(),
+            pilots: Array<any>()
           }
-          round.races.push(race.id)
+          let myRace = {
+            id: race.id,
+            //position: race.position,
+            time: race.time,
+            user_id: race.user_id
+          }
+          round.races.push(myRace)
           currentStage.rounds.push(round)
           // Add round to stage
           currentTime = race.created_at
         } else {
           let diff = race.created_at - currentTime;
-          
-          if (diff < 60000 && diff > -60000) {
+
+          if (diff < 150000 && diff > -150000) {
             // Add race to round
-            currentStage.rounds[currentRound].races.push(race.id)
+            let myRace = {
+              id: race.id,
+              //position: race.position,
+              time: race.time,
+              user_id: race.user_id
+            }
+            currentStage.rounds[currentRound].races.push(myRace)
           } else {
             // Create new round
             currentRound++
             currentTime = race.created_at
             let round = {
               number: currentRound,
-              races: Array<number>(),
-              laps: Array<any>()
+              races: Array<any>(),
+              pilots: Array<any>()
             }
             // Add round to stage
-            round.races.push(race.id)
+            let myRace = {
+              id: race.id,
+              //position: race.position,
+              time: race.time,
+              user_id: race.user_id
+            }
+            round.races.push(myRace)
             // Add race to round
             currentStage.rounds.push(round)
           }
         }
       })
       event.stages.push(currentStage)
+
+      const qualifPoints = [50, 45, 42, 40, 39, 38, 37, 36];
+
       // Get all laps for this event
       for (let stage of event.stages) {
+        let stagePoints: Index = {};
         for (let round of stage.rounds) {
-          let laps = await StatsRepo.getInstance().listLapsForRaces(round.races);
+          let raceIds: Array<number> = [];
+          let races: Array<any> = round.races
+
+          races.forEach(race => {
+            raceIds.push(race.id)
+          });
+          let laps = await StatsRepo.getInstance().listLapsForRaces(raceIds);
+
           let currentLap = -1
+          let currentPosition = -1
+          let currentPilot = 0
           let cleanLaps: Array<any> = []
+
           laps.forEach(item => {
-            if (currentLap != item.lap) {
-              // New lap
-              currentLap = item.lap
-              let lap = {
-                lap: currentLap,
-                times: Array<any>()
+            if (currentPilot != item.user_id) {
+              currentPilot = item.user_id
+              currentPosition++
+              if (!stagePoints[item.nickname]) {
+                stagePoints[item.nickname] = 0
               }
-              lap.times.push({
-                user_id: item.user_id,
-                nickname: item.nickname,
-                country: item.country,
+              stagePoints[item.nickname] += qualifPoints[currentPosition];
+              event.users[item.nickname] += qualifPoints[currentPosition];
+              //console.log(stagePoints)
+              if (event.users[item.nickname]) {
+                event.users[item.nickname] += qualifPoints[currentPosition];
+              }
+
+              stage.points = stagePoints;
+              // console.log(stage.points)
+              let pilotLaps = {
+                id: item.user_id,
+                pilot: item.nickname,
+                points: qualifPoints[currentPosition],
+                time: item.total_time || 0,
+                formated_time: this.formatRaceTime(item.total_time) || 0,
+                penalty: 0,
+                laps: Array<any>()
+              }
+              pilotLaps.laps.push({
+                number: item.lap,
                 time: item.time,
               })
-              // Add lap time
-              cleanLaps.push(lap)
-              // Push lap
-            } else {
-              // Add lap time
-              let times: Array<any> = cleanLaps[currentLap].times;
-              times.push({
-                user_id: item.user_id,
-                nickname: item.nickname,
-                country: item.country,
+              cleanLaps.push(pilotLaps)
+
+            }
+            else {
+              let pilotLaps: Array<any> = cleanLaps[currentPosition].laps;
+              pilotLaps.push({
+                number: item.lap,
                 time: item.time,
               })
-              cleanLaps[currentLap].times = times
+              cleanLaps[currentPosition].laps = pilotLaps
+            }
+          })
+          // Calculate penalty
+          cleanLaps.forEach(pilot => {
+            let penalty = 0;
+            let totalLaps = 0;
+            let laps: Array<any> = pilot.laps;
+            laps.forEach(element => {
+              totalLaps += element.time
+            });
+            if (pilot.time - totalLaps < -1 || pilot.time - totalLaps > 1) {
+              penalty = pilot.time - totalLaps;
+              console.log(penalty)
             }
           })
           // Push laps
-          round.laps.push(cleanLaps)
+          // cleanLaps
+          round.pilots = cleanLaps
         }
       }
+      //Order stage points as an Array and calcultage event total points
+      for (let stage of event.stages) {
+        let pilots = []
+        let points: Index = stage.points;
+        let players = Object.keys(stage.points);
+        players.sort();
+        for (let i = 0; i < players.length; i++) {
+          pilots.push({
+            nickname: players[i],
+            points: stage.points[players[i]],
+          })
+        };
+        stage.points = pilots;
+
+      }
+
+      //Order event points as an Array and calcultage event total points
+      let pilots = []
+      let points: Index = event.users;
+      let players = Object.keys(event.users);
+      let playersPoints = Object.values(event.users);
+      playersPoints.sort((a: number, b: number) => {
+        if (a > b)
+          return -1;
+        if (a < b)
+          return 1;
+        // a doit être égal à b
+        return 0;
+      });
+      for (let i = 0; i < playersPoints.length; i++) {
+        for (let j = 0; j < playersPoints.length; j++) {
+          if (playersPoints[i] == event.users[players[j]]) {
+            pilots.push({
+              nickname: players[j],
+              points: event.users[players[j]],
+            })
+          }
+        }
+      };
+      event.users = pilots;
 
       return new HttpResponse(200, event);
     } catch (e) {
       console.error(`[statsLogic.listRaceByDate] error `);
       console.error(e);
       return new HttpResponse(500);
+    }
+  }
+
+  sortObjectByKeys(myObj: Index) {
+    let keys = Object.keys(myObj);
+    let i, len = keys.length;
+
+    keys.sort();
+
+    for (i = 0; i < len; i++) {
+      let k = keys[i];
+      // console.log(k + ':' + myObj[k]);
     }
   }
 
