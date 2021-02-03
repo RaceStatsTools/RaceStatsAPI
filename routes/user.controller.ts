@@ -62,16 +62,22 @@ export class UserController {
       if (existingUser) {
         return res.status(409).json({ "message": "User with this email already exists" });
       }
+      let existingNickname = await UserLogic.getInstance().getByNickname(user.nickname);
+      if (existingNickname) {
+        return res.status(409).json({ "message": "User with this nickname already exists" });
+      }
+
       let result = await UserLogic.getInstance().create(user);
       if (result.status !== 201) {
         return res.status(result.status).json(result.data);
       }
 
-      let createdBoUser: iUser = result.data;
+      let createdUser: iUser = result.data;
       if (user.password) {
-        await UserLogic.getInstance().setPassword(createdBoUser.id.toString(), user.password);
+        await UserLogic.getInstance().setPassword(createdUser.id.toString(), user.password);
       }
       return res.status(result.status).json(result.data);
+
     }
   }
 

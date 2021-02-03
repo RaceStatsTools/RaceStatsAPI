@@ -2,15 +2,15 @@ import { BaseRepo } from '../../utils/base.repo';
 import { UserFactory } from './user.factory';
 import { iUser } from './iUser'
 
-export class BoUserRepo {
+export class UserRepo {
 
-  private static _instance: BoUserRepo;
+  private static _instance: UserRepo;
 
   /**
    * Singleton
    */
-  static getInstance(): BoUserRepo {
-    this._instance = this._instance || new BoUserRepo();
+  static getInstance(): UserRepo {
+    this._instance = this._instance || new UserRepo();
     return this._instance;
   }
 
@@ -25,6 +25,13 @@ export class BoUserRepo {
   async getByEmail(email: String): Promise<any> {
     const sql = "SELECT * FROM public.user WHERE email=($1)";
     const sqlParams = [email];
+    let res = await BaseRepo.getInstance().selectSingle(sql, sqlParams);
+    return res;
+  }
+
+  async getByNickname(nickname: String): Promise<any> {
+    const sql = "SELECT * FROM public.user WHERE nickname=($1)";
+    const sqlParams = [nickname];
     let res = await BaseRepo.getInstance().selectSingle(sql, sqlParams);
     return res;
   }
