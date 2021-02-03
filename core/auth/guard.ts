@@ -37,7 +37,7 @@ export const guard = (req: any, res: Response, next: NextFunction) => {
   } else {
     return res.status(403).send({
       success: false,
-      message: 'No token provided.'
+      message: 'Not authorized'
     });
   }
 };

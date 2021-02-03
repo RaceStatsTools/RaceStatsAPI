@@ -4,17 +4,18 @@ import { iLap } from '../core/stats/iLap';
 import { iRace } from '../core/stats/iRace';
 import { guard } from '../core/auth/guard';
 import { iUser } from '../core/user/iUser';
+import { key } from '../core/auth/key';
 
 export class StatsController {
 
     public static create(app: Router) {
         const router: Router = Router();
-        router.post('/laps/', guard, new StatsController().PostLap);
+        router.post('/laps/', key, guard, new StatsController().PostLap);
+        router.post('/races/', key, guard, new StatsController().PostRace);
         router.get('/laps/best/:userId', new StatsController().listBestLaps)
-        router.post('/races/', guard, new StatsController().PostRace);
-        router.post('/tracks/:id/best-laps-history/:userId', guard, new StatsController().ListBestLapsHistory);
-        router.post('/events/:id/races/', guard, new StatsController().ListRacesByDate);
-        router.get('/tracks/', guard, new StatsController().ListTracks);
+        router.post('/tracks/:id/best-laps-history/:userId', new StatsController().ListBestLapsHistory);
+        router.post('/events/:id/races/', new StatsController().ListRacesByDate);
+        router.get('/tracks/', new StatsController().ListTracks);
         router.get('/tracks/:id/races', guard, new StatsController().ListRacesByTrackId);
         router.get('/tracks/:id/rankings', new StatsController().TrackRanking)
         app.use('/stats', router);
