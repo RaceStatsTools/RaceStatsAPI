@@ -51,6 +51,30 @@ export class UserRepo {
     }
   }
 
+  async getByIds(ids: Array<number>): Promise<any> {
+    let sql = `SELECT * FROM public.user u WHERE u.id IN (`;
+    let userCount=0;
+    ids.forEach(userId => {
+      if (userCount > 0) {
+        sql += ","
+      }
+      sql += userId.toString();
+      userCount++;
+    });
+    sql +=`)
+    ORDER BY u.nickname;`;
+    const sqlParams:Array<any> = [];
+    try {
+      let res = await this.baseRepo.select(sql, sqlParams);
+      if (!res) return null;
+      return this.userFactory.mapFromDbColl(res);
+    } catch (e) {
+      console.error(new Error(e));
+      console.error(`sql: ${sql}, sqlParams: ${JSON.stringify(sqlParams)}`);
+      throw new Error('Database exception');
+    }
+  }
+
   async update(id: string, boUser: iUser) {
     const sql = 'UPDATE public.user set nickname=$2, email=$3, updated_at=NOW() where id=$1;'
     const sqlParams = [
