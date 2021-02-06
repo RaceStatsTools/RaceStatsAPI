@@ -187,7 +187,7 @@ export class StatsLogic {
         } else {
           let diff = race.created_at - currentTime;
 
-          if (diff < 150000 && diff > -150000) {
+          if (diff < 220000 && diff > -220000) {
             // Add race to round
             let myRace = {
               id: race.id,
