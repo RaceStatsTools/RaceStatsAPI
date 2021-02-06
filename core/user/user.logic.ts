@@ -2,11 +2,13 @@ import { UserRepo } from "./user.repo";
 import { HttpResponse } from "../../utils/httpResponse";
 import { iUser } from "./iUser";
 import * as crypto from 'crypto';
+import { StatsRepo } from "../stats/stats.repo";
 
 export class UserLogic {
   private static _instance: UserLogic;
 
   private userRepo: UserRepo;
+  private statsRepo: StatsRepo;
   /**
    * Singleton
    */
@@ -17,6 +19,7 @@ export class UserLogic {
 
   constructor() {
     this.userRepo = UserRepo.getInstance();
+    this.statsRepo = StatsRepo.getInstance();
   }
 
   async getByEmail(email: String) {
@@ -59,6 +62,16 @@ export class UserLogic {
         tracks.forEach(track => {
           userStats.tracks.push(track)
         });
+      let bestLaps = await this.statsRepo.listBestLaps(userStats.id)
+      bestLaps.forEach(track => {
+        userStats.tracks.forEach(tr => {
+          if (tr.id == track.id) {
+            tr.time = track.time;
+            tr.best_time = track.best_time;
+          }
+        })
+      });
+
       return new HttpResponse(200, userStats);
     }
     return new HttpResponse(404);

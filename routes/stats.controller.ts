@@ -16,7 +16,7 @@ export class StatsController {
         router.post('/tracks/:id/best-laps-history/:userId', new StatsController().ListBestLapsHistory);
         router.post('/events/:id/races/', new StatsController().ListRacesByDate);
         router.get('/tracks/', new StatsController().ListTracks);
-        router.get('/tracks/:id/races', guard, new StatsController().ListRacesByTrackId);
+        router.get('/tracks/:id/users/:userId/races', guard, new StatsController().ListRacesByTrackId);
         router.get('/tracks/:id/rankings', new StatsController().TrackRanking)
         app.use('/stats', router);
     }
@@ -65,7 +65,16 @@ export class StatsController {
 
     async TrackRanking(req: Request, res: Response) {
         let track = parseInt(req.params['id']) || 0;
-        const result = await StatsLogic.getInstance().trackRanking(track);
+        let pageSize = 8;
+        let pageIndex = 0;
+        if (req.query.pageSize) {
+            pageSize = parseInt(req.query.pageSize.toString()) || 8;
+        }
+        if (req.query.pageIndex) {
+            pageIndex = parseInt(req.query.pageIndex.toString()) || 0;
+        }
+
+        const result = await StatsLogic.getInstance().trackRanking(track, pageSize, pageIndex);
         return res.status(200).json(result.data);
     }
 
@@ -106,13 +115,10 @@ export class StatsController {
 
     async ListRacesByTrackId(req: Request, res: Response) {
         let id = parseInt(req.params['id']);
-        const user: iUser = req.user as iUser;
-        if (user && user.id) {
-            const result = await StatsLogic.getInstance().listUserRacesByTrackId(user.id, id);
-            return res.status(200).json(result.data);
-        } else {
-            res.status(403).json({ "message": "You must be authentified to get races" });
-        }
+        let userId = parseInt(req.params['userId']);
+        const result = await StatsLogic.getInstance().listUserRacesByTrackId(userId, id);
+        return res.status(200).json(result.data);
+
     }
 
 }

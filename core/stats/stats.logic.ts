@@ -88,9 +88,9 @@ export class StatsLogic {
     }
   }
 
-  async trackRanking(track: number) {
+  async trackRanking(track: number, pageSize: number, pageIndex: number) {
     try {
-      let result = await StatsRepo.getInstance().trackRanking(track);
+      let result = await StatsRepo.getInstance().trackRanking(track, pageSize, pageIndex);
       return new HttpResponse(200, result);
     } catch (e) {
       console.error(`[statsLogic.trackRanking] error `);

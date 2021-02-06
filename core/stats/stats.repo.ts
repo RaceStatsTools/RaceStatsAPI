@@ -55,19 +55,30 @@ export class StatsRepo {
      
   }
 
-  async trackRanking(track: number) {
-    let sql;
+  async trackRanking(track: number, pageSize: number, pageIndex: number) {
     var sqlParams: any[] = [
-      track
+      track,
+      pageSize,
+      pageIndex * pageSize
     ];
 
-    sql = `SELECT min(l."time") as time, l.track, u.nickname, u.country
-    FROM public.lap l
-    INNER JOIN public.user u ON u.id = l.user_id
-    INNER JOIN public.track t ON t.length = l.track
-    WHERE t.id = $1
-    GROUP BY l.track, u.nickname, u.country
-    ORDER BY time`;
+    const sql = `
+    WITH cte as (
+      SELECT min(l."time") as time, l.track, u.nickname, u.country, ROW_NUMBER() OVER (ORDER BY min(l."time")) as rank
+      FROM public.lap l
+      INNER JOIN public.user u ON u.id = l.user_id
+      INNER JOIN public.track t ON t.length = l.track
+      WHERE t.id = $1
+      GROUP BY l.track, u.nickname, u.country
+      ORDER BY time
+    )
+    SELECT
+    (SELECT count(*) FROM cte) as total,
+    cte.*
+    FROM cte
+    LIMIT $2 OFFSET $3
+    ;`;
+
     const res = await BaseRepo.getInstance().select(sql, sqlParams);
     return res;
   }
@@ -174,30 +185,30 @@ export class StatsRepo {
     if (userId != 0) {
       sqlParams.push(userId)
       sql = `WITH CTE_time AS (
-        SELECT t.name, t.country, u.nickname, u.country as user_country, MIN(l.time) as time, l.track
+        SELECT t.id, t.name, t.country, u.nickname, u.country as user_country, MIN(l.time) as time, l.track
         FROM public.track t
         INNER JOIN public.lap l
         ON t.length = l.track
         INNER JOIN public.user u
         ON u.id = l.user_id
         WHERE user_id=$1
-        GROUP BY l.track, t.name, t.country, u.nickname, u.country
+        GROUP BY t.id, l.track, t.name, t.country, u.nickname, u.country
         ORDER BY t.name ASC
       )
       SELECT time.*, MIN(l.time) as best_time
       FROM CTE_time time
       INNER JOIN public.lap l
       ON time.track = l.track
-      GROUP BY l.track, time.name, time.country, time.nickname, time.country, time.user_country, time.time, time.track
+      GROUP BY time.id, l.track, time.name, time.country, time.nickname, time.country, time.user_country, time.time, time.track
       ORDER BY time.name
       `;
     } else {
       sql = `WITH CTE_time AS (
-        SELECT t.name, t.country, MIN(time) as time, l.track
+        SELECT t.id, t.name, t.country, MIN(time) as time, l.track
           FROM public.lap l
           INNER JOIN public.track t
           ON t.length = l.track
-          GROUP BY l.track, t.name, t.country
+          GROUP BY t.id, l.track, t.name, t.country
         )
         SELECT time.*, u.nickname, u.country as user_country FROM CTE_time time
         INNER JOIN public.lap l
