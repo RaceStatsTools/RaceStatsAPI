@@ -55,6 +55,19 @@ export class StatsRepo {
      
   }
 
+  async getTrack(trackId: number) {
+    let sql;
+    var sqlParams: any[] = [
+      trackId
+    ];
+
+    sql = `SELECT * FROM public.track
+    WHERE id=$1`;
+
+    const res = await BaseRepo.getInstance().selectSingle(sql, sqlParams);
+    return res;
+  }
+
   async trackRanking(track: number, pageSize: number, pageIndex: number) {
     var sqlParams: any[] = [
       track,

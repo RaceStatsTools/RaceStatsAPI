@@ -88,6 +88,17 @@ export class StatsLogic {
     }
   }
 
+  async getTrack(trackId: number) {
+    try {
+      let result = await StatsRepo.getInstance().getTrack(trackId);
+      return new HttpResponse(200, result);
+    } catch (e) {
+      console.error(`[statsLogic.getTrack] error `);
+      console.error(e);
+      return new HttpResponse(500);
+    }
+  }
+
   async trackRanking(track: number, pageSize: number, pageIndex: number) {
     try {
       let result = await StatsRepo.getInstance().trackRanking(track, pageSize, pageIndex);
