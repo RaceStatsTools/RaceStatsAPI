@@ -10,8 +10,8 @@ export class StatsController {
 
     public static create(app: Router) {
         const router: Router = Router();
-        router.post('/laps/', key, guard, new StatsController().PostLap);
-        router.post('/races/', key, guard, new StatsController().PostRace);
+        router.post('/laps/', guard, new StatsController().PostLap);
+        router.post('/races/', guard, new StatsController().PostRace);
         router.get('/laps/best/:userId', new StatsController().listBestLaps)
         router.post('/tracks/:id/best-laps-history/:userId', new StatsController().ListBestLapsHistory);
         router.post('/events/:id/races/', new StatsController().ListRacesByDate);
