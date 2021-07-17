@@ -69,7 +69,7 @@ export class UserController {
       if (existingUser) {
         return res.status(409).json({ "message": "User with this email already exists" });
       }
-      let existingNickname = await UserLogic.getInstance().getByNickname(user.nickname);
+      let existingNickname = await UserLogic.getInstance().getNicknameExists(user.nickname);
       if (existingNickname) {
         return res.status(409).json({ "message": "User with this nickname already exists" });
       }

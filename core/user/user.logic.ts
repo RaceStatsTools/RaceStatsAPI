@@ -27,6 +27,11 @@ export class UserLogic {
     return userMatch;
   }
 
+  async getNicknameExists(nickname: String) {
+    let userMatch = await this.userRepo.getByNickname(nickname);
+    return userMatch;
+  }
+
   async getByNickname(nickname: String) {
     let userStats = {
       id: 0,
